@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  --color-obsidian-canvas: #303236;
+  --color-void: #090a0c;
+  --color-charcoal-card: #111111;
+  --color-slate-edge: #4a4b50;
+  --color-iron-veil: #6b6c6d;
+  --color-smoke: #95979e;
+  --color-ash: #a9a9aa;
+  --color-frost: #d1d1d1;
+  --color-linen: #e5e5e7;
+  --color-snow: #ffffff;
+  --color-electric-iris: #5683da;
+  --color-ember-pulse: #ff8964;
+  --color-molasses: #5a250a;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-sora), system-ui, sans-serif;
+
+  --radius-tags: 9999px;
+  --radius-cards: 12px;
+  --radius-inputs: 4px;
+  --radius-panels: 30px;
+  --radius-buttons: 9999px;
+
+  --shadow-md: rgba(0, 0, 0, 0.35) 0px 4px 16px 0px;
+  --shadow-subtle: rgba(255, 255, 255, 0.4) 0px 0px 0px 6px;
+  --shadow-sm: rgba(0, 0, 0, 0.15) 0px 4px 6px 0px;
+  --shadow-xl: rgba(0, 0, 0, 0.5) 0px 6px 25px 0px;
+}
+
+:root {
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sora: 'Sora', system-ui, -apple-system, sans-serif;
+}
+
+/* Global Styles */
+html, body {
+  background-color: var(--color-void);
+  color: var(--color-snow);
+  scroll-behavior: auto;
+  overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-edge);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-smoke);
+}
+
+/* Background Grid Overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  content: "";
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.grid-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center top;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+  pointer-events: none;
+}
+
+/* Aurora Light Beam */
+.aurora-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 900px;
+  background: linear-gradient(180deg, 
+    var(--color-electric-iris) 0%, 
+    var(--color-ember-pulse) 50%, 
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  filter: blur(140px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.radial-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 137, 100, 0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(74, 75, 80, 0.4);
+}
+
+.glass-card {
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(74, 75, 80, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card:hover {
+  border-color: rgba(86, 131, 218, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+/* Spotlight/Hover Effects */
+.hover-glow {
+  position: relative;
+  overflow: hidden;
+}
+.hover-glow::after {
+  content: '';
+  position: absolute;
+  top: var(--y, 0px);
+  left: var(--x, 0px);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(86, 131, 218, 0.12) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  opacity: 0;
+}
+.hover-glow:hover::after {
+  opacity: 1;
+}

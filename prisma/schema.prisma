@@ -1,0 +1,71 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  phone              String?   @unique             // Mobile number identifier support
+  password           String    // Password field for client authentication
+  name               String?
+  role               String    @default("student") // Default role is normal student user
+  emailVerified      Boolean   @default(false)     // Block login unless email is verified
+  verificationToken  String?   @unique             // Verification token parameter
+  resetToken         String?   @unique             // Password reset token
+  resetTokenExpires  DateTime?                     // Expiration timeline for password resets
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  projects           UserProject[]
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  category    String
+  domain      String   // agentic, web, ai-ml, blockchain, security, iot
+  description String
+  difficulty  String   // Beginner, Intermediate, Advanced, Expert
+  duration    String
+  image       String
+  features    String[] // Array of bullet feature specs
+  techStack   String[] // Array of technologies used
+  price       String
+  demoUrl     String?
+  githubUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       UserProject[]
+}
+
+model UserProject {
+  id        String   @id @default(uuid())
+  userId    String
+  projectId String
+  progress  Int      @default(0) // Completion percentage (0-100)
+  branch    String   @default("main")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, projectId])
+}
+
+model Inquiry {
+  id             String   @id @default(uuid())
+  name           String
+  email          String
+  org            String?
+  notes          String?
+  domain         String
+  complexity     String   // basic, standard, enterprise
+  estimatedPrice Int
+  status         String   @default("pending") // pending, reviewed, accepted, closed
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
