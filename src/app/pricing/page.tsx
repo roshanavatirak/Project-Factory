@@ -14,58 +14,61 @@ export default function PricingPage() {
 
   const tiers = [
     {
-      name: "Academic Capstone",
-      originalPrice: 12000,
-      standardPrice: 10000,
-      promoPrice: 8000,
-      desc: "Perfect for students needing a clean, fully documented boilerplate code template.",
+      name: "Academic Capstone Pack",
+      originalPrice: 15000,
+      standardPrice: 12000,
+      promoPrice: 10000,
+      desc: "Perfect for students needing a clean, fully documented boilerplate code template for capstone evaluation.",
       features: [
-        "Verified Github source repository",
-        "Setup instructions README.md",
-        "1-Hour dynamic debugging support",
-        "SQLite/PostgreSQL local setup files",
-        "Standard environment lockfiles"
+        "Complete Source Code (Github Repository Access)",
+        "Step-by-step Setup instructions README.md",
+        "Standard Project Synopsis Template (Word/PDF)",
+        "Local SQLite/PostgreSQL Database setup scripts",
+        "Standard environment configurations & lockfiles",
+        "1-Hour dedicated remote setup & debugging support"
       ],
       popular: false,
-      cta: "Acquire Template",
+      cta: "Acquire Capstone",
       href: "/projects",
       glow: "none" as const
     },
     {
-      name: "Advanced SaaS",
-      originalPrice: 15000,
-      standardPrice: 12000,
-      promoPrice: 10000,
-      desc: "Ideal for comprehensive final year engineering scopes and standard product demos.",
+      name: "Advanced SaaS Package",
+      originalPrice: 18000,
+      standardPrice: 15000,
+      promoPrice: 12000,
+      desc: "Ideal for comprehensive final year engineering presentations, standard product demos, and viva defense.",
       features: [
-        "Full dashboard web app code template",
-        "Step-by-step video configuration guide",
-        "3-Hours total support sessions",
-        "Docker & Compose container configs",
-        "Integrated Mock API testing suites",
-        "Telemetry logs & graph visualization"
+        "All Academic Capstone Deliverables",
+        "Full Dashboard web app template codebase",
+        "Complete Software Requirement Specs (SRS) & UML diagrams",
+        "Pre-configured Docker & Docker Compose container files",
+        "Project Presentation Slides (PPT) & Video setup guide",
+        "External Examiner Viva prep Q&A guide sheet",
+        "3-Hours total virtual pairing & deployment support"
       ],
       popular: true,
-      cta: "Explore SaaS Projects",
+      cta: "Explore SaaS Packages",
       href: "/projects",
       glow: "iris" as const
     },
     {
-      name: "Startup MVP Incubator",
-      originalPrice: 18000,
-      standardPrice: 15000,
-      promoPrice: 12000,
-      desc: "Designed for stealth founders, PhD researchers, and highly complex agentic swarms.",
+      name: "Research & Startup MVP Pack",
+      originalPrice: 22000,
+      standardPrice: 18000,
+      promoPrice: 15000,
+      desc: "Designed for highly complex multi-agent swarms, PhD level research implementations, and startup MVP launches.",
       features: [
-        "Custom scoped feature deployment",
-        "Private Slack channel developer access",
-        "8-Hours dedicated virtual pairing sessions",
-        "Vercel, AWS, or GCP setup guides",
-        "Agentic system sandbox integrations",
-        "Multi-model routing configuration"
+        "All Advanced SaaS Deliverables",
+        "Custom scoped feature builds & AI agent sandbox logic",
+        "Vercel, AWS, or GCP production cloud deployment scripts",
+        "Comprehensive Project Report & LaTeX research paper draft",
+        "Multi-model API routing configurations (Ollama/OpenAI)",
+        "Direct WhatsApp/Slack access to Lead Engineer",
+        "8-Hours dedicated virtual engineering pairing sessions"
       ],
       popular: false,
-      cta: "Initiate Scope",
+      cta: "Initiate MVP Scope",
       href: "/contact",
       glow: "ember" as const
     }
@@ -138,7 +141,6 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {tiers.map((tier, idx) => {
             const currentPrice = isPromoActive ? tier.promoPrice : tier.standardPrice;
-            const originalSlash = isPromoActive ? tier.standardPrice : tier.originalPrice;
             const totalSaved = tier.originalPrice - currentPrice;
             
             return (
@@ -161,22 +163,24 @@ export default function PricingPage() {
                   
                   {/* Prices & Slashes */}
                   <div className="flex flex-col mt-6">
-                    <div className="flex items-center gap-2 text-[10px] text-smoke font-mono font-semibold uppercase tracking-wider">
-                      <span className="line-through text-smoke/50">₹{tier.originalPrice.toLocaleString("en-IN")}</span>
-                      <span>&rarr;</span>
-                      <span className="text-emerald-400">₹{tier.standardPrice.toLocaleString("en-IN")} List</span>
+                    <div className="flex items-center gap-2 mb-2 font-mono text-sm font-semibold uppercase tracking-wider flex-wrap">
+                      <span className="line-through text-white/40">₹{tier.originalPrice.toLocaleString("en-IN")}</span>
+                      <span className="text-smoke/40">&rarr;</span>
+                      <span className="text-ember-pulse bg-ember-pulse/10 border border-ember-pulse/20 px-2.5 py-0.5 rounded text-xs font-bold shrink-0">
+                        Standard: ₹{tier.standardPrice.toLocaleString("en-IN")}
+                      </span>
                     </div>
                     
                     <div className="flex items-baseline gap-1 mt-2">
-                      <span className="text-4xl font-display font-extrabold text-white tracking-tight">
+                      <span className="text-5xl font-display font-extrabold text-white tracking-tight">
                         ₹{currentPrice.toLocaleString("en-IN")}
                       </span>
                       <span className="text-xs text-smoke font-sans">/ fixed</span>
                     </div>
 
                     {isPromoActive && (
-                      <span className="text-[10px] text-emerald-400 font-mono font-bold mt-2 flex items-center gap-1 animate-pulse">
-                        🔥 Extra 20% off applied! Saved ₹{totalSaved.toLocaleString("en-IN")}
+                      <span className="text-[10px] text-emerald-400 font-mono font-bold mt-2.5 flex items-center gap-1 animate-pulse">
+                        🔥 Extra Early Bird applied! Saved ₹{totalSaved.toLocaleString("en-IN")}
                       </span>
                     )}
                   </div>
