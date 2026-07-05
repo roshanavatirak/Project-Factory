@@ -59,6 +59,17 @@ export default function AdminDashboardPage() {
   // Tab controller
   const [activeTab, setActiveTab] = useState<"overview" | "packages" | "students" | "purchases" | "system">("overview");
 
+  const updateStatsState = (backendStats: any) => {
+    if (!backendStats) return;
+    setStats({
+      totalUsers: backendStats.totalUsers ?? 0,
+      totalInquiries: backendStats.totalInquiries ?? 0,
+      estRevenue: backendStats.totalRevenue ?? backendStats.estRevenue ?? 0,
+      pendingInquiries: backendStats.pendingCount ?? backendStats.pendingInquiries ?? 0,
+      totalProjects: backendStats.totalProjects ?? 0,
+    });
+  };
+
   // Verify Admin Session on mount
   useEffect(() => {
     let active = true;
@@ -105,7 +116,7 @@ export default function AdminDashboardPage() {
     try {
       const statsRes = await adminGetStatsAction();
       if (statsRes.success && statsRes.stats) {
-        setStats(statsRes.stats);
+        updateStatsState(statsRes.stats);
       } else {
         toast(statsRes.error || "Failed to load system stats.", "error");
       }
@@ -154,7 +165,7 @@ export default function AdminDashboardPage() {
         );
         // Refresh stats
         const statsRes = await adminGetStatsAction();
-        if (statsRes.success && statsRes.stats) setStats(statsRes.stats);
+        if (statsRes.success && statsRes.stats) updateStatsState(statsRes.stats);
       } else {
         toast(res.error || "Failed to modify role.", "error");
       }
@@ -175,7 +186,7 @@ export default function AdminDashboardPage() {
         );
         // Refresh stats
         const statsRes = await adminGetStatsAction();
-        if (statsRes.success && statsRes.stats) setStats(statsRes.stats);
+        if (statsRes.success && statsRes.stats) updateStatsState(statsRes.stats);
       } else {
         toast(res.error || "Failed to update status.", "error");
       }
@@ -194,7 +205,7 @@ export default function AdminDashboardPage() {
         setUsers((prev) => prev.filter((u) => u.id !== userId));
         // Refresh stats
         const statsRes = await adminGetStatsAction();
-        if (statsRes.success && statsRes.stats) setStats(statsRes.stats);
+        if (statsRes.success && statsRes.stats) updateStatsState(statsRes.stats);
       } else {
         toast(res.error || "Failed to delete account.", "error");
       }
@@ -213,7 +224,7 @@ export default function AdminDashboardPage() {
         setInquiries((prev) => prev.filter((inq) => inq.id !== inquiryId));
         // Refresh stats
         const statsRes = await adminGetStatsAction();
-        if (statsRes.success && statsRes.stats) setStats(statsRes.stats);
+        if (statsRes.success && statsRes.stats) updateStatsState(statsRes.stats);
       } else {
         toast(res.error || "Failed to delete inquiry.", "error");
       }
@@ -421,7 +432,7 @@ export default function AdminDashboardPage() {
                 {loadingStats ? (
                   <div className="h-10 w-24 bg-void/50 animate-pulse rounded mt-2" />
                 ) : (
-                  <h2 className="text-4xl font-display font-extrabold text-white mt-2">${stats.estRevenue.toLocaleString()}</h2>
+                  <h2 className="text-4xl font-display font-extrabold text-white mt-2">${(stats.estRevenue || 0).toLocaleString()}</h2>
                 )}
                 <p className="text-[10px] text-smoke/70 mt-2 font-sans font-medium">Cumulative value of scoped projects</p>
               </Card>
@@ -563,9 +574,9 @@ export default function AdminDashboardPage() {
                         </div>
                         <p className="text-xs text-smoke line-clamp-2 leading-relaxed">{pkg.description}</p>
                         <div className="flex items-center gap-3 text-xs font-mono font-bold mt-1 text-emerald-400">
-                          <span>Standard: ₹{pkg.standardPrice.toLocaleString("en-IN")}</span>
+                          <span>Standard: ₹{(pkg.standardPrice || 0).toLocaleString("en-IN")}</span>
                           <span className="text-smoke/30">|</span>
-                          <span>Promo: ₹{pkg.promoPrice.toLocaleString("en-IN")}</span>
+                          <span>Promo: ₹{(pkg.promoPrice || 0).toLocaleString("en-IN")}</span>
                         </div>
                       </button>
                     ))}
@@ -856,7 +867,7 @@ export default function AdminDashboardPage() {
                             <span className="font-semibold text-electric-iris block font-mono capitalize">[{inq.domain}]</span>
                             <span className="text-[10px] text-smoke uppercase tracking-wider font-semibold font-mono">{inq.complexity}</span>
                           </td>
-                          <td className="py-4 px-6 font-mono font-bold text-emerald-400">${inq.estimatedPrice.toLocaleString()}</td>
+                          <td className="py-4 px-6 font-mono font-bold text-emerald-400">${(inq.estimatedPrice || 0).toLocaleString()}</td>
                           <td className="py-4 px-6">
                             <select
                               value={inq.status}

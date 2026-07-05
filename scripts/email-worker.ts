@@ -63,7 +63,8 @@ async function sendMail(to: string, subject: string, html: string) {
 
 // Render HTML Verification email template
 function renderVerificationTemplate(name: string, token: string) {
-  const verifyUrl = `http://localhost:3000/auth/verify?token=${token}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const verifyUrl = `${appUrl}/auth/verify?token=${token}`;
   return `
     <div style="font-family: sans-serif; background-color: #090a0c; color: #ffffff; padding: 40px; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #4a4b50;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -100,7 +101,8 @@ function renderVerificationTemplate(name: string, token: string) {
 
 // Render HTML Password Reset email template
 function renderResetTemplate(name: string, token: string) {
-  const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const resetUrl = `${appUrl}/auth/reset-password?token=${token}`;
   return `
     <div style="font-family: sans-serif; background-color: #090a0c; color: #ffffff; padding: 40px; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #4a4b50;">
       <div style="text-align: center; margin-bottom: 30px;">

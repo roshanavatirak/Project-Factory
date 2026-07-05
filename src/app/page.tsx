@@ -22,87 +22,12 @@ const ThreeScene = dynamic(() => import("@/components/ThreeScene"), {
   ),
 });
 
-// Live code explorer database
-const CODE_FILES = {
-  "ThreeScene.tsx": `import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere } from "@react-three/drei";
 
-export default function NebulaBackground() {
-  return (
-    <Canvas camera={{ position: [0, 0, 5] }}>
-      <ambientLight intensity={0.25} />
-      <pointLight position={[10, 10, 10]} color="#5683da" />
-      <NebulaCloud color="#ff8964" />
-      <OrbitControls enableZoom={false} autoRotate />
-    </Canvas>
-  );
-}`,
-  "schema.prisma": `model User {
-  id                 String    @id @default(uuid())
-  email              String    @unique
-  phone              String?   @unique
-  password           String
-  emailVerified      Boolean   @default(false)
-  verificationToken  String?   @unique
-  resetToken         String?   @unique
-  resetTokenExpires  DateTime?
-  inquiries          Inquiry[]
-}`,
-  "auth.ts": `import nodemailer from "nodemailer";
-
-export async function sendVerification(email: string, token: string) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "roshanawatirak@gmail.com",
-      pass: "grsvapfipgchnfat",
-    },
-  });
-
-  const url = \`https://project-factory.netlify.app/auth/verify?token=\${token}\`;
-  await transporter.sendMail({
-    from: "roshanawatirak@gmail.com",
-    to: email,
-    subject: "Activate Your Account",
-    html: \`<p>Click <a href="\${url}">here</a> to verify.</p>\`,
-  });
-}`
-};
 
 export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
 
-  // Live code explorer states
-  const [activeCodeFile, setActiveCodeFile] = useState<keyof typeof CODE_FILES>("ThreeScene.tsx");
-  const [isCompiling, setIsCompiling] = useState(false);
-  const [compileLogs, setCompileLogs] = useState<string[]>([]);
 
-  const simulateCompile = () => {
-    if (isCompiling) return;
-    setIsCompiling(true);
-    setCompileLogs([]);
-    const logs = [
-      "⚡ Initializing premium diagnostics...",
-      "📦 Bundling system components...",
-      "🔑 Verified Google SMTP secure gateway...",
-      "🔗 Established live pool to Supabase database...",
-      "🚀 Next.js App Router Compilation: Success!",
-      "🟢 Diagnostic Status: Operational."
-    ];
-    let currentLogIndex = 0;
-    const interval = setInterval(() => {
-      if (currentLogIndex < logs.length) {
-        const nextLog = logs[currentLogIndex];
-        if (nextLog) {
-          setCompileLogs((prev) => [...prev, nextLog]);
-        }
-        currentLogIndex++;
-      } else {
-        clearInterval(interval);
-        setIsCompiling(false);
-      }
-    }, 350);
-  };
 
   // Statistics counters
   const [deliveredCount, setDeliveredCount] = useState(0);
@@ -410,119 +335,49 @@ export default function Home() {
       </section>
 
       {/* SECTION 4: Product Code Showcase - Crisp White background */}
-      <section className="bg-white py-32 relative z-10 border-y border-slate-200 shadow-sm">
+      <section className="bg-white py-24 relative z-10 border-y border-slate-200 shadow-sm font-sans">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left description */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              <div className="inline-flex self-start items-center gap-1.5 px-3 py-1 rounded-full bg-electric-iris/10 border border-electric-iris/25 text-xs font-semibold text-electric-iris uppercase tracking-wider">
+            {/* Left description column */}
+            <div className="lg:col-span-5 flex flex-col gap-6 text-left">
+              <div className="inline-flex self-start items-center gap-1.5 px-3 py-1 rounded-full bg-electric-iris/10 border border-electric-iris/25 text-xs font-semibold text-electric-iris uppercase tracking-wider font-sans">
                 <Code2 className="w-3.5 h-3.5" /> Systems Engineering
               </div>
-              <h2 className="font-display text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+              <h2 className="font-display text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
                 Inspect Real Code & Architectures
               </h2>
               <p className="text-slate-600 text-sm font-sans leading-relaxed">
-                We design clean code structures using React Three Fiber, Next.js server actions, and schema databases. Every coordinate is cleanly mapped and documented.
+                Dive into production-ready software structures designed for high-performance applications. We craft clean, modular configurations featuring immersive Three.js loops, serverless APIs, and automated configurations.
               </p>
 
-              <div className="flex flex-col gap-3 font-sans text-xs text-slate-600">
+              <div className="flex flex-col gap-3 text-xs text-slate-600 font-semibold font-sans">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-electric-iris" />
-                  <span>TypeScript compile-safe configurations</span>
+                  <CheckCircle2 className="w-4 h-4 text-electric-iris shrink-0" />
+                  <span>Strict compile-safe TypeScript guidelines</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-electric-iris" />
-                  <span>Clean environment mapping walkthroughs</span>
+                  <CheckCircle2 className="w-4 h-4 text-electric-iris shrink-0" />
+                  <span>Clean environment mapping & setup walkthroughs</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-electric-iris shrink-0" />
+                  <span>Production-grade Prisma schemas and API handlers</span>
                 </div>
               </div>
 
               <Button variant="primary" href="/projects" className="self-start mt-2">
-                Inspect Source Codes
+                Inspect Source Codes <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </div>
 
-            {/* Right product mockup containing the interactive code playground */}
-            <div className="lg:col-span-7">
-              <div className="relative rounded-2xl overflow-hidden bg-void border border-slate-200 shadow-2xl p-1.5 flex flex-col min-h-[480px]">
-                {/* Browser top-bar */}
-                <div className="flex items-center justify-between border-b border-slate-850 px-4 py-3 bg-charcoal-card rounded-t-xl">
-                  {/* Window buttons */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                  </div>
-                  {/* File Selector Tabs */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto max-w-[70%] scrollbar-none">
-                    {Object.keys(CODE_FILES).map((fileName) => (
-                      <button
-                        key={fileName}
-                        onClick={() => setActiveCodeFile(fileName as any)}
-                        className={`px-3 py-1 rounded-md text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${activeCodeFile === fileName
-                            ? "bg-slate-800 text-electric-iris font-bold border border-slate-700/50 shadow-inner"
-                            : "text-smoke hover:bg-slate-800/40 hover:text-white"
-                          }`}
-                      >
-                        {fileName}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="w-8" />
-                </div>
-
-                {/* Code content viewer */}
-                <div className="flex-1 bg-void/90 p-5 font-mono text-[10.5px] leading-relaxed overflow-x-auto select-all text-smoke/90 border-b border-slate-800/50 min-h-[240px] text-left">
-                  <pre className="whitespace-pre">
-                    <code>
-                      {CODE_FILES[activeCodeFile]}
-                    </code>
-                  </pre>
-                </div>
-
-                {/* Simulated Diagnostics Console */}
-                <div className="bg-charcoal-card p-4 rounded-b-xl flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold font-mono tracking-widest text-smoke uppercase flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-electric-iris animate-pulse" />
-                      Diagnostics Console
-                    </span>
-                    <button
-                      onClick={simulateCompile}
-                      disabled={isCompiling}
-                      className={`px-4 py-1.5 rounded-full text-[10px] font-bold font-mono tracking-wider transition-all cursor-pointer ${isCompiling
-                          ? "bg-slate-800 text-smoke/60 cursor-not-allowed border border-slate-700/50"
-                          : "bg-electric-iris text-white hover:bg-electric-iris/85 shadow-md shadow-electric-iris/20 border border-electric-iris/30"
-                        }`}
-                    >
-                      {isCompiling ? "Compiling..." : "Run Engine Diagnostics"}
-                    </button>
-                  </div>
-
-                  {/* Console logs container */}
-                  <div className="bg-void border border-slate-850 rounded-lg p-3 min-h-[85px] max-h-[120px] overflow-y-auto text-[10px] font-mono text-left flex flex-col gap-1.5 scrollbar-thin">
-                    {compileLogs.length === 0 ? (
-                      <span className="text-slate-edge italic select-none">Console idle. Awaiting diagnostic instructions...</span>
-                    ) : (
-                      compileLogs.map((log, index) => (
-                        <div
-                          key={index}
-                          className={`animate-in fade-in slide-in-from-left duration-200 ${log && (log.includes("Success") || log.includes("Operational"))
-                              ? "text-green-400 font-bold"
-                              : "text-slate-300"
-                            }`}
-                        >
-                          {log}
-                        </div>
-                      ))
-                    )}
-                    {isCompiling && (
-                      <div className="text-electric-iris animate-pulse flex items-center gap-1 font-bold">
-                        <span>$ compiling</span>
-                        <span className="w-1.5 h-3 bg-electric-iris animate-ping" />
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {/* Right product mockup: smaller screen/image column */}
+            <div className="lg:col-span-7 flex justify-center lg:justify-end">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 max-w-[520px] transition-transform duration-300 hover:scale-[1.015]">
+                <img
+                  src="/ide-screenshot.png"
+                  alt="Systems Engineering Mock Editor"
+                  className="w-full h-auto object-contain"
+                />
               </div>
             </div>
           </div>

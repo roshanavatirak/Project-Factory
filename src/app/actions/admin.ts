@@ -2,268 +2,166 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
 
-// Internal helper to verify the calling session has the "admin" role
-async function verifyAdminSession() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("session");
-  if (!sessionCookie || !sessionCookie.value) {
-    return null;
-  }
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+
+async function getAuthToken() {
   try {
-    const user = JSON.parse(sessionCookie.value);
-    if (user && user.role === "admin") {
-      return user;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("session");
+    if (sessionCookie && sessionCookie.value) {
+      const sessionUser = JSON.parse(sessionCookie.value);
+      return sessionUser.token || "";
     }
-  } catch {
-    return null;
-  }
-  return null;
+  } catch {}
+  return "";
 }
 
-// 1. Fetch system statistics
 export async function adminGetStatsAction() {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const totalUsers = await prisma.user.count();
-    const totalInquiries = await prisma.inquiry.count();
-    
-    // Sum of estimated revenue
-    const revenueAggregation = await prisma.inquiry.aggregate({
-      _sum: {
-        estimatedPrice: true
-      }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/stats`, {
+      headers: { "Authorization": `Bearer ${token}` }
     });
-    const estRevenue = revenueAggregation._sum.estimatedPrice || 0;
-
-    // Count of pending inquiries
-    const pendingInquiries = await prisma.inquiry.count({
-      where: { status: "pending" }
-    });
-
-    // Count of projects
-    const totalProjects = await prisma.project.count();
-
-    return {
-      success: true,
-      stats: {
-        totalUsers,
-        totalInquiries,
-        estRevenue,
-        pendingInquiries,
-        totalProjects
-      }
-    };
-  } catch (error) {
-    console.error("Admin stats aggregation error:", error);
-    return { success: false, error: "Failed to load admin statistics." };
+    return await res.json();
+  } catch (err) {
+    console.error("Admin stats proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 2. Fetch all registered users
 export async function adminGetUsersAction() {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const users = await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-      }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
+      headers: { "Authorization": `Bearer ${token}` }
     });
-
-    const safeUsers = users.map((u) => ({
-      ...u,
-      createdAt: u.createdAt.toISOString()
-    }));
-
-    return { success: true, users: safeUsers };
-  } catch (error) {
-    console.error("Admin fetch users error:", error);
-    return { success: false, error: "Failed to retrieve student directory." };
+    return await res.json();
+  } catch (err) {
+    console.error("Admin users proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 3. Fetch all inquiries
 export async function adminGetInquiriesAction() {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const inquiries = await prisma.inquiry.findMany({
-      orderBy: { createdAt: "desc" }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/inquiry/list`, {
+      headers: { "Authorization": `Bearer ${token}` }
     });
-
-    const safeInquiries = inquiries.map((inq) => ({
-      id: inq.id,
-      name: inq.name,
-      email: inq.email,
-      org: inq.org || "",
-      notes: inq.notes || "",
-      domain: inq.domain,
-      complexity: inq.complexity,
-      estimatedPrice: inq.estimatedPrice,
-      status: inq.status,
-      createdAt: inq.createdAt.toISOString()
-    }));
-
-    return { success: true, inquiries: safeInquiries };
-  } catch (error) {
-    console.error("Admin fetch inquiries error:", error);
-    return { success: false, error: "Failed to retrieve inquiry logs." };
+    return await res.json();
+  } catch (err) {
+    console.error("Admin inquiries proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 4. Update user role
 export async function adminUpdateUserRoleAction(userId: string, newRole: string) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
-  if (userId === admin.id) {
-    return { success: false, error: "Validation failed: You cannot alter your own admin status." };
-  }
-
   try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: newRole }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/users/role`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ targetUserId: userId, newRole })
     });
-
-    revalidatePath("/dashboard");
-    revalidatePath("/admin/dashboard");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Admin role update error:", error);
-    return { success: false, error: "Failed to modify user role." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/dashboard");
+      revalidatePath("/admin/dashboard");
+    }
+    return result;
+  } catch (err) {
+    console.error("Admin role update proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 5. Update inquiry status
 export async function adminUpdateInquiryStatusAction(inquiryId: string, newStatus: string) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    await prisma.inquiry.update({
-      where: { id: inquiryId },
-      data: { status: newStatus }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/inquiries/status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ targetInquiryId: inquiryId, newStatus })
     });
-
-    revalidatePath("/dashboard");
-    revalidatePath("/admin/dashboard");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Admin status update error:", error);
-    return { success: false, error: "Failed to update inquiry status." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/dashboard");
+      revalidatePath("/admin/dashboard");
+    }
+    return result;
+  } catch (err) {
+    console.error("Admin status update proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 6. Delete user account
 export async function adminDeleteUserAction(userId: string) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
-  if (userId === admin.id) {
-    return { success: false, error: "Validation failed: You cannot delete your own account." };
-  }
-
   try {
-    await prisma.user.delete({
-      where: { id: userId }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/users/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ id: userId })
     });
-
-    revalidatePath("/dashboard");
-    revalidatePath("/admin/dashboard");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Admin user delete error:", error);
-    return { success: false, error: "Failed to delete user profile." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/dashboard");
+      revalidatePath("/admin/dashboard");
+    }
+    return result;
+  } catch (err) {
+    console.error("Admin user delete proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 7. Delete inquiry record
 export async function adminDeleteInquiryAction(inquiryId: string) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    await prisma.inquiry.delete({
-      where: { id: inquiryId }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/inquiries/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ id: inquiryId })
     });
-
-    revalidatePath("/dashboard");
-    revalidatePath("/admin/dashboard");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Admin inquiry delete error:", error);
-    return { success: false, error: "Failed to purge inquiry record." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/dashboard");
+      revalidatePath("/admin/dashboard");
+    }
+    return result;
+  } catch (err) {
+    console.error("Admin inquiry delete proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 8. Fetch all packages (for administration)
 export async function adminGetPackagesAction() {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const packages = await prisma.package.findMany({
-      orderBy: { createdAt: "asc" }
-    });
-
-    const safePackages = packages.map((p) => ({
-      id: p.id,
-      key: p.key,
-      name: p.name,
-      description: p.description,
-      originalPrice: p.originalPrice,
-      standardPrice: p.standardPrice,
-      promoPrice: p.promoPrice,
-      features: p.features,
-      popular: p.popular,
-      cta: p.cta,
-      glow: p.glow,
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString(),
-    }));
-
-    return { success: true, packages: safePackages };
-  } catch (error) {
-    console.error("Admin fetch packages error:", error);
-    return { success: false, error: "Failed to retrieve package catalogs." };
+    const res = await fetch(`${BACKEND_URL}/api/packages`);
+    return await res.json();
+  } catch (err) {
+    console.error("Admin fetch packages proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 9. Update package details
 export async function adminUpdatePackageAction(
   packageId: string,
   data: {
@@ -278,56 +176,30 @@ export async function adminUpdatePackageAction(
     glow?: string;
   }
 ) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const updated = await prisma.package.update({
-      where: { id: packageId },
-      data: {
-        name: data.name,
-        description: data.description,
-        originalPrice: data.originalPrice !== undefined ? Math.floor(data.originalPrice) : undefined,
-        standardPrice: data.standardPrice !== undefined ? Math.floor(data.standardPrice) : undefined,
-        promoPrice: data.promoPrice !== undefined ? Math.floor(data.promoPrice) : undefined,
-        features: data.features,
-        popular: data.popular,
-        cta: data.cta,
-        glow: data.glow,
-      }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/packages/update`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ id: packageId, ...data })
     });
-
-    revalidatePath("/pricing");
-    revalidatePath("/contact");
-    revalidatePath("/admin/dashboard");
-
-    return {
-      success: true,
-      package: {
-        id: updated.id,
-        key: updated.key,
-        name: updated.name,
-        description: updated.description,
-        originalPrice: updated.originalPrice,
-        standardPrice: updated.standardPrice,
-        promoPrice: updated.promoPrice,
-        features: updated.features,
-        popular: updated.popular,
-        cta: updated.cta,
-        glow: updated.glow,
-        createdAt: updated.createdAt.toISOString(),
-        updatedAt: updated.updatedAt.toISOString(),
-      }
-    };
-  } catch (error) {
-    console.error("Admin update package error:", error);
-    return { success: false, error: "Failed to update package details." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/pricing");
+      revalidatePath("/contact");
+      revalidatePath("/admin/dashboard");
+    }
+    return result;
+  } catch (err) {
+    console.error("Admin update package proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }
 
-// 10. Create a new package
 export async function adminCreatePackageAction(data: {
   key: string;
   name: string;
@@ -340,58 +212,26 @@ export async function adminCreatePackageAction(data: {
   cta?: string;
   glow?: string;
 }) {
-  const admin = await verifyAdminSession();
-  if (!admin) {
-    return { success: false, error: "Unauthorized: Admin privileges required." };
-  }
-
   try {
-    const existing = await prisma.package.findUnique({
-      where: { key: data.key.toLowerCase().trim() }
+    const token = await getAuthToken();
+    const res = await fetch(`${BACKEND_URL}/api/admin/packages/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
     });
-    if (existing) {
-      return { success: false, error: "Validation failed: A package with this key already exists." };
+    
+    const result = await res.json();
+    if (result.success) {
+      revalidatePath("/pricing");
+      revalidatePath("/contact");
+      revalidatePath("/admin/dashboard");
     }
-
-    const created = await prisma.package.create({
-      data: {
-        key: data.key.toLowerCase().trim(),
-        name: data.name,
-        description: data.description,
-        originalPrice: Math.floor(data.originalPrice),
-        standardPrice: Math.floor(data.standardPrice),
-        promoPrice: Math.floor(data.promoPrice),
-        features: data.features,
-        popular: data.popular || false,
-        cta: data.cta || "Acquire Package",
-        glow: data.glow || "none",
-      }
-    });
-
-    revalidatePath("/pricing");
-    revalidatePath("/contact");
-    revalidatePath("/admin/dashboard");
-
-    return {
-      success: true,
-      package: {
-        id: created.id,
-        key: created.key,
-        name: created.name,
-        description: created.description,
-        originalPrice: created.originalPrice,
-        standardPrice: created.standardPrice,
-        promoPrice: created.promoPrice,
-        features: created.features,
-        popular: created.popular,
-        cta: created.cta,
-        glow: created.glow,
-        createdAt: created.createdAt.toISOString(),
-        updatedAt: created.updatedAt.toISOString(),
-      }
-    };
-  } catch (error) {
-    console.error("Admin create package error:", error);
-    return { success: false, error: "Failed to create package catalog tier." };
+    return result;
+  } catch (err) {
+    console.error("Admin create package proxy error:", err);
+    return { success: false, error: "Database authentication failed or network is unreachable." };
   }
 }

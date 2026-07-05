@@ -35,9 +35,12 @@ export default function Navbar() {
         const res = await getSessionAction();
         if (res.success && res.user) {
           setUser(res.user);
+        } else {
+          setUser(null);
         }
       } catch (err) {
         console.error("Navbar session fetch warning:", err);
+        setUser(null);
       }
     }
     fetchSession();
