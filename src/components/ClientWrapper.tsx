@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Lenis from "lenis";
 import { Terminal } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -72,36 +73,15 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       {loading && (
         <div className="fixed inset-0 bg-void z-[9999] flex flex-col items-center justify-center font-sans select-none pointer-events-auto">
           {/* Constellation background light */}
-          <div className="absolute w-[400px] h-[400px] rounded-full bg-radial from-electric-iris/20 to-transparent blur-3xl animate-pulse" />
+          <div className="absolute w-[400px] h-[400px] rounded-full bg-radial from-electric-iris/15 to-transparent blur-3xl" />
           
-          <div className="flex flex-col items-center gap-8 relative z-10">
-            {/* Spinning blueprint frame */}
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-tr from-electric-iris to-ember-pulse flex items-center justify-center relative animate-pulse">
-              <Terminal className="w-10 h-10 text-white animate-pulse" />
-              <div className="absolute inset-0 border-2 border-dashed border-white/30 rounded-xl animate-spin [animation-duration:15s]" />
-            </div>
-
-            <div className="text-center">
-              <h2 className="font-display text-lg font-bold text-white tracking-widest uppercase">
-                Project Factory
-              </h2>
-              <p className="text-[10px] text-smoke font-mono tracking-wider mt-1 uppercase">
-                Assembling Systems...
-              </p>
-            </div>
-
-            {/* Progress indicator */}
-            <div className="flex flex-col items-center gap-2 w-48 mt-4">
-              <span className="font-display text-4xl font-extrabold text-white tracking-tighter">
-                {progress}%
-              </span>
-              <div className="w-full h-[2px] bg-slate-edge/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-electric-iris to-ember-pulse transition-all duration-100" 
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+          <div className="flex flex-col items-center justify-center relative z-10 w-full max-w-[280px] h-[280px]">
+            <DotLottieReact
+              src="https://lottie.host/935243cd-53dd-4d65-90c9-33e555ae3bdf/cf4K2Yo1Xf.json"
+              loop
+              autoplay
+              className="w-full h-full object-contain"
+            />
           </div>
         </div>
       )}
