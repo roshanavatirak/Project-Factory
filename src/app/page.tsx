@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { 
-  ArrowRight, Cpu, Code2, Shield, Smartphone, 
-  Database, Network, Zap, Sparkles, Compass, 
+import {
+  ArrowRight, Cpu, Code2, Shield, Smartphone,
+  Database, Network, Zap, Sparkles, Compass,
   CheckCircle2, Terminal, ShieldCheck, FileCheck, Layers
 } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -311,11 +311,10 @@ export default function Home() {
               <button
                 key={idx}
                 onClick={() => setActiveStep(idx)}
-                className={`relative px-5 py-2.5 text-xs font-semibold tracking-wider rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap flex-1 text-center select-none z-10 ${
-                  activeStep === idx 
-                    ? "bg-white text-slate-900 shadow-sm border border-slate-200/50" 
+                className={`relative px-5 py-2.5 text-xs font-semibold tracking-wider rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap flex-1 text-center select-none z-10 ${activeStep === idx
+                    ? "bg-white text-slate-900 shadow-sm border border-slate-200/50"
                     : "text-slate-500 hover:text-slate-900 border border-transparent"
-                }`}
+                  }`}
               >
                 <span className="font-mono text-[10px] text-electric-iris mr-1.5">{st.num}</span>
                 {st.tag}
@@ -324,7 +323,7 @@ export default function Home() {
           </div>
 
           {/* Active step panel display with Slate edge borders and Staggered Deliverables */}
-          <div 
+          <div
             key={activeStep}
             className="border border-slate-200/80 rounded-2xl p-8 md:p-12 bg-slate-50/50 grid grid-cols-1 md:grid-cols-12 gap-8 items-center min-h-[300px] animate-in fade-in slide-in-from-bottom-4 duration-300 shadow-sm"
           >
@@ -344,8 +343,8 @@ export default function Home() {
                 <span className="text-[10px] uppercase font-bold tracking-widest text-electric-iris font-mono">Deliverables / Artifacts</span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-1">
                   {workflowSteps[activeStep].deliverables.map((del, dIdx) => (
-                    <div 
-                      key={dIdx} 
+                    <div
+                      key={dIdx}
                       className="flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-white border border-slate-200/70 shadow-sm animate-in fade-in slide-in-from-left duration-300"
                       style={{ animationDelay: `${dIdx * 100}ms` }}
                     >
@@ -387,9 +386,9 @@ export default function Home() {
             {domainsList.map((dom, i) => {
               const IconComp = dom.icon;
               return (
-                <Card 
-                  key={i} 
-                  glowColor={dom.glow} 
+                <Card
+                  key={i}
+                  glowColor={dom.glow}
                   className="flex flex-col gap-4 p-6"
                 >
                   <div className="w-10 h-10 rounded-lg bg-void border border-slate-edge/30 flex items-center justify-center text-electric-iris shrink-0">
@@ -459,11 +458,10 @@ export default function Home() {
                       <button
                         key={fileName}
                         onClick={() => setActiveCodeFile(fileName as any)}
-                        className={`px-3 py-1 rounded-md text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${
-                          activeCodeFile === fileName
+                        className={`px-3 py-1 rounded-md text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${activeCodeFile === fileName
                             ? "bg-slate-800 text-electric-iris font-bold border border-slate-700/50 shadow-inner"
                             : "text-smoke hover:bg-slate-800/40 hover:text-white"
-                        }`}
+                          }`}
                       >
                         {fileName}
                       </button>
@@ -491,29 +489,27 @@ export default function Home() {
                     <button
                       onClick={simulateCompile}
                       disabled={isCompiling}
-                      className={`px-4 py-1.5 rounded-full text-[10px] font-bold font-mono tracking-wider transition-all cursor-pointer ${
-                        isCompiling
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-bold font-mono tracking-wider transition-all cursor-pointer ${isCompiling
                           ? "bg-slate-800 text-smoke/60 cursor-not-allowed border border-slate-700/50"
                           : "bg-electric-iris text-white hover:bg-electric-iris/85 shadow-md shadow-electric-iris/20 border border-electric-iris/30"
-                      }`}
+                        }`}
                     >
                       {isCompiling ? "Compiling..." : "Run Engine Diagnostics"}
                     </button>
                   </div>
-                  
+
                   {/* Console logs container */}
                   <div className="bg-void border border-slate-850 rounded-lg p-3 min-h-[85px] max-h-[120px] overflow-y-auto text-[10px] font-mono text-left flex flex-col gap-1.5 scrollbar-thin">
                     {compileLogs.length === 0 ? (
                       <span className="text-slate-edge italic select-none">Console idle. Awaiting diagnostic instructions...</span>
                     ) : (
                       compileLogs.map((log, index) => (
-                        <div 
+                        <div
                           key={index}
-                          className={`animate-in fade-in slide-in-from-left duration-200 ${
-                            log && (log.includes("Success") || log.includes("Operational"))
-                              ? "text-green-400 font-bold" 
+                          className={`animate-in fade-in slide-in-from-left duration-200 ${log && (log.includes("Success") || log.includes("Operational"))
+                              ? "text-green-400 font-bold"
                               : "text-slate-300"
-                          }`}
+                            }`}
                         >
                           {log}
                         </div>
@@ -544,7 +540,7 @@ export default function Home() {
                 <circle cx="350" cy="150" r="6" className="fill-ember-pulse animate-pulse" />
                 <circle cx="200" cy="300" r="6" className="fill-electric-iris" />
                 <circle cx="400" cy="250" r="6" className="fill-snow" />
-                
+
                 <line x1="150" y1="100" x2="350" y2="150" stroke="currentColor" strokeWidth="1" />
                 <line x1="150" y1="100" x2="200" y2="300" stroke="currentColor" strokeWidth="1" />
                 <line x1="350" y1="150" x2="400" y2="250" stroke="currentColor" strokeWidth="1" />
@@ -580,7 +576,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="relative rounded-2xl overflow-hidden bg-charcoal-card border border-slate-edge/20 p-12 md:p-20 flex flex-col items-center text-center gap-6">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-radial from-electric-iris/5 to-transparent blur-3xl pointer-events-none" />
-            
+
             <h2 className="font-display text-4xl md:text-6xl font-bold tracking-tight text-white max-w-3xl leading-tight">
               Ready to construct <br />
               your next digital asset?
@@ -588,7 +584,7 @@ export default function Home() {
             <p className="text-smoke text-sm md:text-base font-sans max-w-md leading-relaxed mt-2">
               Scope your project specifications or pick a pre-engineered setup. Join hundreds of builders worldwide.
             </p>
-            
+
             <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
               <Button variant="primary" href="/contact">
                 Get Custom Quote

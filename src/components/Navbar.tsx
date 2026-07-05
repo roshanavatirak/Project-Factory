@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Terminal, User, LogOut, ChevronDown, Package, 
-  Home, Compass, CreditCard, LogIn, Laptop 
+  Home, Compass, CreditCard, LogIn, Laptop,
+  ShieldCheck
 } from "lucide-react";
 import Button from "./ui/Button";
 import { getSessionAction, logoutAction } from "@/app/actions/auth";
@@ -133,6 +134,21 @@ export default function Navbar() {
                   )}
                 </Link>
               )}
+
+              {/* Admin Panel link */}
+              {user && user.role === "admin" && (
+                <Link
+                  href="/admin/dashboard"
+                  className={`relative font-sans text-xs font-semibold tracking-wide uppercase transition-colors hover:text-white cursor-pointer text-ember-pulse hover:text-white ${
+                    pathname === "/admin/dashboard" ? "text-white" : "text-ember-pulse"
+                  }`}
+                >
+                  Admin Panel
+                  {pathname === "/admin/dashboard" && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-ember-pulse rounded-full" />
+                  )}
+                </Link>
+              )}
             </div>
 
             {/* Auth panel */}
@@ -156,6 +172,15 @@ export default function Navbar() {
                       <div className="px-3 py-2 border-b border-slate-edge/10 text-[10px] text-smoke font-sans">
                         Logged in as <strong className="text-white block truncate mt-0.5">{user.email}</strong>
                       </div>
+                      {user.role === "admin" && (
+                        <Link
+                          href="/admin/dashboard"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-smoke hover:bg-void hover:text-white transition-colors text-ember-pulse font-semibold"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-ember-pulse" /> Admin Panel
+                        </Link>
+                      )}
                       <Link
                         href="/dashboard"
                         onClick={() => setProfileDropdownOpen(false)}
@@ -259,13 +284,22 @@ export default function Navbar() {
         {/* Tab 4: Account/Dashboard */}
         {user ? (
           <Link
-            href="/dashboard"
+            href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
             className={`flex flex-col items-center gap-0.5 text-center flex-1 transition-all ${
-              pathname === "/dashboard" ? "text-electric-iris scale-105" : "text-smoke"
+              pathname === "/dashboard" || pathname === "/admin/dashboard" ? "text-electric-iris scale-105" : "text-smoke"
             }`}
           >
-            <Package className="w-4 h-4" />
-            <span className="text-[9px] font-bold font-sans tracking-wide">Purchases</span>
+            {user.role === "admin" ? (
+              <>
+                <ShieldCheck className="w-4 h-4 text-ember-pulse" />
+                <span className="text-[9px] font-bold font-sans tracking-wide text-ember-pulse">Admin</span>
+              </>
+            ) : (
+              <>
+                <Package className="w-4 h-4" />
+                <span className="text-[9px] font-bold font-sans tracking-wide">Purchases</span>
+              </>
+            )}
           </Link>
         ) : (
           <Link

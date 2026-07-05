@@ -6,7 +6,8 @@ import { ArrowLeft, Sparkles, Send, CheckCircle2, ChevronRight, Calculator, Refr
 import confetti from "canvas-confetti";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { submitInquiryAction } from "@/app/actions/inquiry";
+import { submitInquiryAction, getPackagesAction } from "@/app/actions/inquiry";
+import { getSessionAction } from "@/app/actions/auth";
 
 function ContactWizard() {
   const searchParams = useSearchParams();
@@ -14,59 +15,122 @@ function ContactWizard() {
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    domain: "agentic",
-    complexity: "standard",
+    domain: "ai-ml",
+    complexity: "major",
     name: "",
     email: "",
-    org: "",
-    notes: "",
+    teamSize: "1",
+    teamNames: "",
+    teammateMobile: "",
   });
 
+  const [dbPackages, setDbPackages] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [estimatedPrice, setEstimatedPrice] = useState(599);
+  const [estimatedPrice, setEstimatedPrice] = useState(17500);
 
   // Pre-fill fields if project query exists
   useEffect(() => {
     if (initialProjectId === "nexus-swarm") {
-      setFormData((prev) => ({ ...prev, domain: "agentic", complexity: "standard" }));
+      setFormData((prev) => ({ ...prev, domain: "ai-ml", complexity: "major" }));
     } else if (initialProjectId === "novapay-wallet") {
-      setFormData((prev) => ({ ...prev, domain: "blockchain", complexity: "enterprise" }));
+      setFormData((prev) => ({ ...prev, domain: "blockchain", complexity: "research" }));
     } else if (initialProjectId === "omniscribe-medical") {
-      setFormData((prev) => ({ ...prev, domain: "ai-ml", complexity: "standard" }));
+      setFormData((prev) => ({ ...prev, domain: "nlp", complexity: "major" }));
     } else if (initialProjectId === "vortex-threat") {
-      setFormData((prev) => ({ ...prev, domain: "security", complexity: "enterprise" }));
+      setFormData((prev) => ({ ...prev, domain: "security", complexity: "research" }));
     } else if (initialProjectId === "sentinel-iot") {
-      setFormData((prev) => ({ ...prev, domain: "iot", complexity: "basic" }));
+      setFormData((prev) => ({ ...prev, domain: "iot", complexity: "minor" }));
     }
   }, [initialProjectId]);
 
+  // Pre-select package from URL parameter if redirected from Pricing
+  useEffect(() => {
+    const pkgParam = searchParams.get("package");
+    if (pkgParam) {
+      setFormData((prev) => ({
+        ...prev,
+        complexity: pkgParam,
+      }));
+    }
+  }, [searchParams]);
+
+  // Load logged-in user details & pricing packages from database
+  useEffect(() => {
+    async function loadSessionAndPackages() {
+      try {
+        const sessionRes = await getSessionAction();
+        if (sessionRes.success && sessionRes.user) {
+          setFormData((prev) => ({
+            ...prev,
+            name: prev.name || sessionRes.user.name || "",
+            email: prev.email || sessionRes.user.email || "",
+            teammateMobile: prev.teammateMobile || sessionRes.user.phone || "",
+          }));
+        }
+      } catch (err) {
+        console.error("Session load error in Contact:", err);
+      }
+
+      try {
+        const pkgRes = await getPackagesAction();
+        if (pkgRes.success && pkgRes.packages) {
+          setDbPackages(pkgRes.packages);
+        }
+      } catch (err) {
+        console.error("Packages load error in Contact:", err);
+      }
+    }
+    loadSessionAndPackages();
+  }, []);
+
   // Recalculate price estimation dynamically
   useEffect(() => {
-    let base = 399;
+    // Find matching base package price from loaded database data
+    const matchedPkg = dbPackages.find((p) => p.key === formData.complexity);
+    let base = matchedPkg ? matchedPkg.standardPrice : (
+      formData.complexity === "minor" ? 12000 :
+      formData.complexity === "major" ? 15000 : 18000
+    );
     
-    // Domain multipliers
-    if (formData.domain === "agentic") base += 200;
-    if (formData.domain === "blockchain") base += 300;
-    if (formData.domain === "ai-ml") base += 150;
-    if (formData.domain === "security") base += 250;
-    if (formData.domain === "iot") base += 100;
-
-    // Complexity multipliers
-    if (formData.complexity === "standard") base += 150;
-    if (formData.complexity === "enterprise") base += 400;
+    // Domain multipliers (INR)
+    if (formData.domain === "ai-ml") base += 2500;
+    if (formData.domain === "deep-learning") base += 4000;
+    if (formData.domain === "nlp") base += 3000;
+    if (formData.domain === "data-science") base += 2000;
+    if (formData.domain === "cloud") base += 2500;
+    if (formData.domain === "blockchain") base += 5000;
+    if (formData.domain === "security") base += 4500;
+    if (formData.domain === "networks") base += 1500;
+    if (formData.domain === "iot") base += 2500;
+    if (formData.domain === "games-arvr") base += 3500;
+    if (formData.domain === "image-processing") base += 3000;
+    if (formData.domain === "software") base += 1000;
+    if (formData.domain === "algorithms") base += 1000;
+    if (formData.domain === "web-dev") base += 1500;
+    if (formData.domain === "app-dev") base += 2500;
 
     setEstimatedPrice(base);
-  }, [formData.domain, formData.complexity]);
+  }, [formData.domain, formData.complexity, dbPackages]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (name === "teamSize") {
+      // Reject non-numeric characters (only allow integers)
+      const digitsOnly = value.replace(/\D/g, "");
+      setFormData((prev) => ({ ...prev, [name]: digitsOnly }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNextStep = () => {
-    if (step === 2 && (!formData.name || !formData.email)) {
-      alert("Name and Email are required to proceed.");
+    if (step === 2 && (!formData.name || !formData.email || !formData.teammateMobile)) {
+      alert("Name, Email, and Mobile Number are required to proceed.");
+      return;
+    }
+    if (step === 2 && (!formData.teamSize || parseInt(formData.teamSize) < 1)) {
+      alert("Team Size must be at least 1.");
       return;
     }
     setStep((prev) => Math.min(prev + 1, 3));
@@ -84,8 +148,8 @@ function ContactWizard() {
       const result = await submitInquiryAction({
         name: formData.name,
         email: formData.email,
-        org: formData.org,
-        notes: formData.notes,
+        org: `Team Size: ${formData.teamSize}`,
+        notes: `Teammate Mobile: ${formData.teammateMobile || "N/A"}${formData.teamNames ? ` | Members: ${formData.teamNames}` : ""}`,
         domain: formData.domain,
         complexity: formData.complexity,
         estimatedPrice: estimatedPrice,
@@ -212,12 +276,21 @@ function ContactWizard() {
                         onChange={handleInputChange}
                         className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris"
                       >
-                        <option value="agentic">Agentic AI & Multi-Agent Swarms</option>
-                        <option value="web">Full-Stack Web Architectures</option>
-                        <option value="ai-ml">Machine / Deep Learning & NLP</option>
-                        <option value="blockchain">Blockchain ERC-4337 Smart Wallets</option>
-                        <option value="security">Cybersecurity Threat Parsers</option>
-                        <option value="iot">IoT Nodes & mqtt Grid Controllers</option>
+                        <option value="ai-ml">AI & Machine Learning</option>
+                        <option value="deep-learning">Deep Learning & Neural Networks</option>
+                        <option value="nlp">Natural Language Processing (NLP)</option>
+                        <option value="data-science">Data Science & Analytics (Data/Web Mining)</option>
+                        <option value="cloud">Cloud & Grid Computing</option>
+                        <option value="blockchain">Blockchain & Web3 Development</option>
+                        <option value="security">Cyber-Security, Cryptography & Forensics</option>
+                        <option value="networks">Computer Networks & Distributed Systems</option>
+                        <option value="iot">Internet of Things (IoT) & Robotics</option>
+                        <option value="games-arvr">Game Design, Development & AR/VR</option>
+                        <option value="image-processing">Image Processing & Computer Vision</option>
+                        <option value="software">Software Engineering & Database Systems</option>
+                        <option value="algorithms">Algorithms & Theory</option>
+                        <option value="web-dev">Web Development (Full-Stack SaaS)</option>
+                        <option value="app-dev">App Development (Android, iOS & Cross-Platform)</option>
                       </select>
                     </div>
 
@@ -225,9 +298,9 @@ function ContactWizard() {
                       <label className="text-xs font-semibold text-white">Project Complexity Level</label>
                       <div className="grid grid-cols-3 gap-3">
                         {[
-                          { key: "basic", label: "Basic Academic", desc: "Clean capstone template" },
-                          { key: "standard", label: "Standard SaaS", desc: "Complete dashboard suite" },
-                          { key: "enterprise", label: "Enterprise / MVP", desc: "Production grade pipelines" },
+                          { key: "minor", label: "Academic Minor", desc: "Minor capstone code & setup logs" },
+                          { key: "major", label: "Academic Major", desc: "Full Major project & synopsis draft" },
+                          { key: "research", label: "Academic Research (IEEE)", desc: "IEEE paper base & comparative charts" },
                         ].map((comp) => (
                           <button
                             key={comp.key}
@@ -287,27 +360,45 @@ function ContactWizard() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-white">University / Startup Organization</label>
-                      <input
-                        type="text"
-                        name="org"
-                        value={formData.org}
-                        onChange={handleInputChange}
-                        placeholder="e.g., Stanford University / Stealth AI"
-                        className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-white">Mobile Number *</label>
+                        <input
+                          type="text"
+                          name="teammateMobile"
+                          required
+                          value={formData.teammateMobile}
+                          onChange={handleInputChange}
+                          placeholder="e.g., +91 7972883376"
+                          className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-white">Team Size *</label>
+                        <input
+                          type="text"
+                          name="teamSize"
+                          required
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={formData.teamSize}
+                          onChange={handleInputChange}
+                          placeholder="e.g., 3"
+                          className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris"
+                        />
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-semibold text-white">Custom Requests & Context Details</label>
-                      <textarea
-                        name="notes"
-                        rows={3}
-                        value={formData.notes}
+                      <label className="text-xs font-semibold text-white">Team Member Names (Optional)</label>
+                      <input
+                        type="text"
+                        name="teamNames"
+                        value={formData.teamNames}
                         onChange={handleInputChange}
-                        placeholder="Specify customized integrations, deployment architectures, or additional API features needed..."
-                        className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris resize-none"
+                        placeholder="e.g., Roshan Avatirak, Rahul Gupta"
+                        className="bg-void border border-slate-edge/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-electric-iris"
                       />
                     </div>
 
@@ -338,7 +429,7 @@ function ContactWizard() {
                       <div>
                         <span className="text-[10px] uppercase font-bold text-smoke tracking-wider">Dynamic Cost Estimate</span>
                         <h3 className="text-2xl font-bold font-display tracking-tight text-white mt-0.5">
-                          ${estimatedPrice} <span className="text-xs text-smoke font-sans font-normal">USD</span>
+                          ₹{estimatedPrice.toLocaleString("en-IN")} <span className="text-xs text-smoke font-sans font-normal">INR</span>
                         </h3>
                       </div>
                     </div>
@@ -349,16 +440,70 @@ function ContactWizard() {
                         <strong className="text-white">{formData.name}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Email:</span>
+                        <span>Email Address:</span>
                         <strong className="text-white">{formData.email}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Domain:</span>
-                        <strong className="text-white capitalize">{formData.domain} Framework</strong>
+                        <span>Mobile Number:</span>
+                        <strong className="text-white">{formData.teammateMobile}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Complexity:</span>
-                        <strong className="text-white capitalize">{formData.complexity} Scope</strong>
+                        <span>Team Size:</span>
+                        <strong className="text-white">
+                          {formData.teamSize === "1" ? "1 Member (Individual)" : `${formData.teamSize} Members`}
+                        </strong>
+                      </div>
+                      {formData.teamNames && (
+                        <div className="flex justify-between">
+                          <span>Team Members:</span>
+                          <strong className="text-white">{formData.teamNames}</strong>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>Domain:</span>
+                        <strong className="text-white">
+                          {formData.domain === "ai-ml"
+                            ? "AI & Machine Learning"
+                            : formData.domain === "deep-learning"
+                            ? "Deep Learning & Neural Networks"
+                            : formData.domain === "nlp"
+                            ? "Natural Language Processing (NLP)"
+                            : formData.domain === "data-science"
+                            ? "Data Science & Analytics"
+                            : formData.domain === "cloud"
+                            ? "Cloud Computing"
+                            : formData.domain === "blockchain"
+                            ? "Blockchain"
+                            : formData.domain === "security"
+                            ? "Cyber-Security & Cryptography"
+                            : formData.domain === "networks"
+                            ? "Computer Networks"
+                            : formData.domain === "iot"
+                            ? "Internet of Things & Robotics"
+                            : formData.domain === "games-arvr"
+                            ? "Game Design & AR/VR"
+                            : formData.domain === "image-processing"
+                            ? "Image Processing & Vision"
+                            : formData.domain === "software"
+                            ? "Software Engineering"
+                            : formData.domain === "algorithms"
+                            ? "Algorithms & Theory"
+                            : formData.domain === "web-dev"
+                            ? "Web Development"
+                            : formData.domain === "app-dev"
+                            ? "App Development"
+                            : formData.domain}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Project Level:</span>
+                        <strong className="text-white">
+                          {formData.complexity === "minor"
+                            ? "Academic Minor"
+                            : formData.complexity === "major"
+                            ? "Academic Major"
+                            : "Academic Research (IEEE)"}
+                        </strong>
                       </div>
                     </div>
 
@@ -398,7 +543,7 @@ function ContactWizard() {
                 </div>
                 <h2 className="font-display text-2xl font-semibold text-white uppercase tracking-wider">Inquiry Scoped!</h2>
                 <p className="font-sans text-smoke text-sm max-w-sm leading-relaxed">
-                  Thank you, <strong>{formData.name}</strong>. We have logged your request under the estimated scope of <strong>${estimatedPrice}</strong>. A dedicated solutions engineer will email you at <strong>{formData.email}</strong> within 12 hours.
+                  Thank you, <strong>{formData.name}</strong>. We have logged your request under the estimated scope of <strong>₹{estimatedPrice.toLocaleString("en-IN")}</strong>. A dedicated solutions engineer will email you at <strong>{formData.email}</strong> within 12 hours.
                 </p>
                 
                 <button
@@ -406,12 +551,13 @@ function ContactWizard() {
                     setSubmitted(false);
                     setStep(1);
                     setFormData({
-                      domain: "agentic",
-                      complexity: "standard",
+                      domain: "ai-ml",
+                      complexity: "major",
                       name: "",
                       email: "",
-                      org: "",
-                      notes: "",
+                      teamSize: "1",
+                      teamNames: "",
+                      teammateMobile: "",
                     });
                   }}
                   className="mt-4 px-6 py-2.5 rounded-full border border-slate-edge/30 hover:bg-charcoal-card text-xs font-semibold text-white transition-colors cursor-pointer"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Sphere } from "@react-three/drei";
 import * as THREE from "three";
@@ -41,7 +41,7 @@ function FloatingMesh({ position, color, size }: { position: [number, number, nu
 // Particle Field Component
 function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
-  
+
   const [positions, count] = useMemo(() => {
     const pCount = 300;
     const arr = new Float32Array(pCount * 3);
@@ -106,16 +106,48 @@ function MouseGlow() {
 }
 
 export default function ThreeScene() {
+  const [hasWebGL, setHasWebGL] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    try {
+      const canvas = document.createElement("canvas");
+      const available = !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+      );
+      setHasWebGL(available);
+    } catch {
+      setHasWebGL(false);
+    }
+  }, []);
+
+  if (hasWebGL === null) {
+    return <div className="absolute inset-0 w-full h-full -z-10 bg-void" />;
+  }
+
+  if (!hasWebGL) {
+    return (
+      <div className="absolute inset-0 w-full h-full -z-10 bg-void overflow-hidden">
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-electric-iris/5 via-void to-void" />
+        <div className="absolute top-[20%] left-[10%] w-1.5 h-1.5 rounded-full bg-electric-iris/60 animate-pulse [animation-duration:3s]" />
+        <div className="absolute top-[40%] right-[15%] w-2 h-2 rounded-full bg-ember-pulse/60 animate-pulse [animation-duration:4s]" />
+        <div className="absolute bottom-[30%] left-[25%] w-1 h-1 rounded-full bg-white/40 animate-pulse [animation-duration:2.5s]" />
+        <div className="absolute bottom-[10%] right-[30%] w-1.5 h-1.5 rounded-full bg-electric-iris/50 animate-pulse [animation-duration:3.5s]" />
+        <div className="absolute top-[70%] left-[45%] w-1 h-1 rounded-full bg-ember-pulse/50 animate-pulse [animation-duration:4.5s]" />
+      </div>
+    );
+  }
+
   return (
     <div className="absolute inset-0 w-full h-full -z-10">
       <Canvas camera={{ position: [0, 0, 5], fov: 60 }} gl={{ antialias: true }}>
         <ambientLight intensity={0.4} />
         <directionalLight position={[2, 4, 3]} intensity={1.5} color="#5683da" />
-        
+
         {/* Abstract Floating geometries */}
         <FloatingMesh position={[-1.8, 1, 0]} color="#5683da" size={0.8} />
         <FloatingMesh position={[1.8, -0.8, -1]} color="#ff8964" size={0.6} />
-        
+
         <Sphere position={[0, 0, -2]} args={[1.2, 32, 32]}>
           <meshStandardMaterial
             color="#111111"
@@ -124,7 +156,7 @@ export default function ThreeScene() {
             wireframe={true}
           />
         </Sphere>
-        
+
         {/* Particle systems */}
         <ParticleField />
 

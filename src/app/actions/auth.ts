@@ -127,7 +127,15 @@ export async function signupAction(data: SignupData) {
 
   const sanitizedName = sanitizeString(data.name);
   const sanitizedEmail = sanitizeString(data.email).toLowerCase();
-  const sanitizedPhone = data.phone ? sanitizeString(data.phone) : null;
+  
+  // Normalize phone number (strip spaces, hyphens, brackets, dots)
+  let sanitizedPhone = data.phone 
+    ? sanitizeString(data.phone).replace(/[\s\-\(\)\.]/g, "") 
+    : null;
+  
+  if (sanitizedPhone === "") {
+    sanitizedPhone = null;
+  }
 
   try {
     // Check email availability
@@ -186,14 +194,20 @@ export async function loginAction(data: LoginData) {
   }
 
   const sanitizedIdentifier = sanitizeString(data.identifier);
+  
+  // Normalize identifier if it is a phone number (i.e. not an email)
+  const isEmail = sanitizedIdentifier.includes("@");
+  const loginSearchIdentifier = isEmail
+    ? sanitizedIdentifier.toLowerCase()
+    : sanitizedIdentifier.replace(/[\s\-\(\)\.]/g, "");
 
   try {
     // 1. Fetch user by email OR phone
     let user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: sanitizedIdentifier.toLowerCase() },
-          { phone: sanitizedIdentifier }
+          { email: loginSearchIdentifier },
+          { phone: loginSearchIdentifier }
         ]
       }
     });
@@ -260,7 +274,22 @@ export async function getSessionAction() {
   }
 
   try {
-    const user = JSON.parse(sessionCookie.value);
+    const sessionUser = JSON.parse(sessionCookie.value);
+    const user = await prisma.user.findUnique({
+      where: { id: sessionUser.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+      }
+    });
+
+    if (!user) {
+      return { success: false };
+    }
+
     return { success: true, user };
   } catch {
     return { success: false };

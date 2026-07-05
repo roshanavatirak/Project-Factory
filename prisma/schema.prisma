@@ -69,3 +69,19 @@ model Inquiry {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model Package {
+  id            String   @id @default(uuid())
+  key           String   @unique // minor, major, research
+  name          String
+  description   String
+  originalPrice Int
+  standardPrice Int
+  promoPrice    Int
+  features      String[] // Array of bullet feature specs
+  popular       Boolean  @default(false)
+  cta           String   @default("Acquire Package")
+  glow          String   @default("none") // none, iris, ember
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
