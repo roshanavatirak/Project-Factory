@@ -18,6 +18,11 @@ export default function Card({
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!tilt || !cardRef.current) return;
@@ -57,14 +62,14 @@ export default function Card({
       onMouseLeave={handleMouseLeave}
       className={`relative rounded-xl overflow-hidden glass-card p-6 bg-charcoal-card/90 border border-slate-edge/30 transition-transform duration-200 ease-out hover-glow ${glowStyles[glowColor]} ${className}`}
       style={{
-        transform: tilt
-          ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`
+        transform: (mounted && tilt)
+          ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0px)`
           : "none",
         transformStyle: "preserve-3d",
       }}
     >
       {/* Dynamic 3D depth wrapper */}
-      <div style={{ transform: tilt ? "translateZ(10px)" : "none" }} className="relative z-10">
+      <div style={{ transform: (mounted && tilt) ? "translateZ(10px)" : "none" }} className="relative z-10">
         {children}
       </div>
     </div>
