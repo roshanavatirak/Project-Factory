@@ -7,6 +7,8 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { requestPasswordResetAction } from "@/app/actions/auth";
 
+import Loader from "@/components/ui/Loader";
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center py-16">
+      {loading && (
+        <div className="fixed inset-0 bg-void/80 z-[9999] flex items-center justify-center pointer-events-auto">
+          <Loader text="Dispatching reset link..." />
+        </div>
+      )}
       <div className="grid-background" />
       <div className="aurora-beam" />
 

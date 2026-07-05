@@ -8,6 +8,8 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { resetPasswordAction } from "@/app/actions/auth";
 
+import Loader from "@/components/ui/Loader";
+
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +55,11 @@ function ResetPasswordForm() {
 
   return (
     <div className="w-full max-w-[450px] px-6 relative z-10">
+      {loading && (
+        <div className="fixed inset-0 bg-void/80 z-[9999] flex items-center justify-center pointer-events-auto">
+          <Loader text="Saving new workspace password..." />
+        </div>
+      )}
       {/* Brand link */}
       <div className="flex flex-col items-center gap-6 mb-8 text-center">
         <Link href="/" className="flex items-center gap-2">
@@ -159,9 +166,7 @@ export default function ResetPasswordPage() {
       <div className="aurora-beam" />
       
       <Suspense fallback={
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <div className="w-10 h-10 border-2 border-t-electric-iris border-slate-edge rounded-full animate-spin" />
-        </div>
+        <Loader text="Initializing Reset Screen..." size={150} />
       }>
         <ResetPasswordForm />
       </Suspense>

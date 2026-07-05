@@ -8,6 +8,8 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { loginAction } from "@/app/actions/auth";
 
+import Loader from "@/components/ui/Loader";
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,6 +57,11 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-[450px] px-6 relative z-10">
+      {loading && (
+        <div className="fixed inset-0 bg-void/80 z-[9999] flex items-center justify-center pointer-events-auto">
+          <Loader text="Verifying credentials & authorizing session..." />
+        </div>
+      )}
       {/* Brand link */}
       <div className="flex flex-col items-center gap-6 mb-8 text-center">
         <Link href="/" className="flex items-center gap-2">

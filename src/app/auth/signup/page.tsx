@@ -7,6 +7,7 @@ import { Terminal, Lock, Mail, ArrowRight, RefreshCw, User, Phone } from "lucide
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { signupAction } from "@/app/actions/auth";
+import Loader from "@/components/ui/Loader";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,7 +37,6 @@ export default function SignupPage() {
         return;
       }
 
-      setLoading(false);
       // Redirect to login page upon success
       router.push("/auth/login?registered=true");
     } catch (err) {
@@ -47,7 +47,12 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-16">
+    <div className="relative min-h-screen bg-void flex items-center justify-center py-20 px-6 font-sans">
+      {loading && (
+        <div className="fixed inset-0 bg-void/80 z-[9999] flex items-center justify-center pointer-events-auto">
+          <Loader text="Building workspace and compiling credentials..." />
+        </div>
+      )}
       <div className="grid-background" />
       <div className="aurora-beam" />
 
