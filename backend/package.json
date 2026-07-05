@@ -16,9 +16,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "pdfkit": "^0.15.0",
+    "prisma": "^5.18.0",
     "redis": "^6.1.0"
-  },
-  "devDependencies": {
-    "prisma": "^5.18.0"
   }
 }
