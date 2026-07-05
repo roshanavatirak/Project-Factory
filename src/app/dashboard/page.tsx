@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 import { getInquiriesAction } from "@/app/actions/inquiry";
 import { getSessionAction, logoutAction } from "@/app/actions/auth";
 import { useToast } from "@/components/Toast";
+import Loader from "@/components/ui/Loader";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -134,10 +135,7 @@ export default function DashboardPage() {
   if (verifyingSession) {
     return (
       <div className="min-h-screen bg-void flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Terminal className="w-10 h-10 text-electric-iris animate-pulse" />
-          <p className="text-xs text-smoke font-mono animate-pulse">Authenticating Session...</p>
-        </div>
+        <Loader text="Authenticating Session..." />
       </div>
     );
   }
@@ -211,8 +209,8 @@ export default function DashboardPage() {
             {/* Left overview */}
             <div className="lg:col-span-8 flex flex-col gap-6">
               {loadingInquiries ? (
-                <Card className="p-8 flex items-center justify-center min-h-[300px]">
-                  <p className="text-xs text-smoke font-mono animate-pulse">Reading secure tables...</p>
+                <Card className="p-8 flex items-center justify-center min-h-[300px] w-full">
+                  <Loader text="Reading secure tables..." size={120} />
                 </Card>
               ) : inquiries.length === 0 ? (
                 <Card glowColor="iris" className="p-8 text-center flex flex-col items-center justify-center min-h-[320px] gap-4">

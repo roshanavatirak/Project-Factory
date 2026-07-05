@@ -7,6 +7,8 @@ import Card from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { getPackagesAction } from "@/app/actions/inquiry";
 
+import Loader from "@/components/ui/Loader";
+
 export default function PricingPage() {
   const { toast } = useToast();
   const [tiers, setTiers] = useState<any[]>([]);
@@ -55,10 +57,7 @@ export default function PricingPage() {
 
         {/* Grid cards */}
         {loadingTiers ? (
-          <div className="col-span-3 text-center py-24 flex flex-col items-center justify-center gap-3 font-mono text-xs">
-            <RefreshCw className="w-8 h-8 text-electric-iris animate-spin" />
-            <span className="text-smoke animate-pulse">Loading live pricing package catalogs...</span>
-          </div>
+          <Loader text="Loading live pricing package catalogs..." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {tiers.map((tier, idx) => {
